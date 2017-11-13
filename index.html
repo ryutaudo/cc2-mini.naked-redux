@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Hello React</title>
+</head>
+
+<body>
+  <div>
+    <h1></h1>
+  </div>
+  <div id="user-list"></div>
+  
+  <script src="https://unpkg.com/redux@latest/dist/redux.min.js"></script>
+  <script>
+    var defaultState = {
+      currentView : 'List',
+      users: [
+        { firstName: 'Ryuta', lastName: 'Udo' },
+        { firstName: 'Igo', lastName: 'Shogi' },
+        { firstName: 'Brusy', lastName: 'Cat' },
+      ]
+    }
+
+    function form (state) {
+      var form = document.createElement('form');
+      form.id='form';
+      var labelFirstName = document.createElement('label');
+      var labelLastName = document.createElement('label');
+      var inputFirstName = document.createElement('input');
+      var inputLastName = document.createElement('input');
+      var submit = document.createElement('input');
+
+      // form.onsubmit=(event) => {
+      //   event.preventDefault();
+        
+      //   // props.addUser({
+      //   //     firstName: this.refs.firstName.value,
+      //   //     lastName: this.refs.lastName.value
+      //   // });
+      // }
+      inputFirstName.ref='firstName';
+      inputFirstName.type='text';
+      inputFirstName.name='firstName'
+      inputLastName.ref='lastName'
+      inputLastName.type="text"
+      inputLastName.name="lastName"
+      labelFirstName.innerHTML='First Name';
+      labelFirstName.appendChild(inputFirstName); 
+      labelLastName.innerHTML='Last Name';
+      labelLastName.appendChild(inputLastName);
+      submit.type='submit'
+
+      form.appendChild(labelFirstName);
+      form.appendChild(labelLastName);
+      form.appendChild(submit);
+
+      return form;
+    };
+
+    function list () {
+      var list = document.createElement('div');
+      list.id = 'list'
+      var addButton = document.createElement('button');
+      addButton.id = 'add-button';
+      addButton.innerHTML = 'Add'
+      var editButton = document.createElement('button');
+      editButton.id = 'edit-button';
+      editButton.innerHTML = 'Edit'
+
+      store.getState().users.forEach((user) => {
+        let userToAdd = document.createElement('div');
+        userToAdd.innerHTML = user.firstName + ' ' + user.lastName;
+        list.appendChild(userToAdd);
+      });
+
+      list.appendChild(addButton);
+      list.appendChild(editButton);
+      
+      return list;
+    }; 
+    
+    function reducer(state, action) {
+      if (typeof state === 'undefined') {
+        return defaultState;
+      }
+
+      switch (action.type) {
+
+        case 'ADD': {
+          return Object.assign({}, state, {
+            currentView: 'Add'
+          });
+        }
+        case 'ADD_USER': {
+          
+          return Object.assign({}, state, {
+            currentView: 'List',
+            users: state.users
+          })
+        }
+
+        case 'EDIT':
+          return state.currentView = 'Edit';
+        case 'LIST':
+          return state.currentView = 'List';
+        default:
+          return state.currentView = 'List';
+      };
+    };
+
+    var store = Redux.createStore(reducer);
+    var userListEl = document.getElementById('user-list');
+
+    
+    function render() {
+      if(store.getState().currentView === 'Add') {
+        userListEl.removeChild(document.getElementById('list'));
+        userListEl.appendChild(form());
+      }
+      if(store.getState().currentView === 'List') { 
+        userListEl.appendChild(list());
+      }
+    };
+
+    render();
+    store.subscribe(render);
+
+    document.getElementById('add-button')
+      .addEventListener('click', () => {
+        store.dispatch({ type: 'ADD' })
+      })
+
+    document.getElementById('edit-button')
+      .addEventListener('click', () => {
+        store.dispatch({ type: 'EDIT' })
+      })
+    
+    document.getElementById('form')
+      .addEventListener('submit', () => {
+        store.subscribe(() => {
+         store.dispatch({
+           type: 'ADD_USER',
+           firstName: refs.firstName.value,
+           lastName: refs.lastName.value
+          })
+        })
+      })
+
+  </script>
+</body>
+
+</html>
